@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fantasyai-pgbouncer
+  labels:
+    app.kubernetes.io/name: pgbouncer
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6432
+      targetPort: pgbouncer
+      protocol: TCP
+      name: pgbouncer
+  selector:
+    app.kubernetes.io/name: pgbouncer

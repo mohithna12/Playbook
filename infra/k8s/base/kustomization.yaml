@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fantasyai
+
+resources:
+  - namespace.yaml
+  - api/deployment.yaml
+  - api/service.yaml
+  - api/hpa.yaml
+  - api/pdb.yaml
+  - worker/deployment.yaml
+  - sim-worker/deployment.yaml
+  - pgbouncer/deployment.yaml
+  - pgbouncer/service.yaml
+  - pgbouncer/configmap.yaml
+  - network-policies/default-deny.yaml
+  - network-policies/allow-api.yaml
+  - network-policies/allow-worker.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: fantasyai

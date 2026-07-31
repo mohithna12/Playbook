@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgbouncer-config
+  labels:
+    app.kubernetes.io/name: pgbouncer
+data:
+  pgbouncer.ini: |
+    [databases]
+    fantasyai = host=${POSTGRESQL_HOST} port=5432 dbname=fantasyai
+
+    [pgbouncer]
+    listen_addr = 0.0.0.0
+    listen_port = 6432
+    auth_type = md5
+    pool_mode = transaction
+    default_pool_size = 15
+    max_client_conn = 200
+    max_db_connections = 50
+    server_tls_sslmode = require
+    ignore_startup_parameters = extra_float_digits
+    server_reset_query = DISCARD ALL
+    server_check_query = SELECT 1
+    server_check_delay = 30
+    log_connections = 0
+    log_disconnections = 0
+    log_pooler_errors = 1

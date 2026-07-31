@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from ALB (any source in the VPC)
+    - ports:
+        - port: 8000
+          protocol: TCP
+  egress:
+    # pgbouncer
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: pgbouncer
+      ports:
+        - port: 6432
+          protocol: TCP
+    # Redis (external, allow by CIDR in overlay)
+    - ports:
+        - port: 6379
+          protocol: TCP
+    # DNS
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # HTTPS outbound (Clerk JWKS, S3, Secrets Manager)
+    - ports:
+        - port: 443
+          protocol: TCP

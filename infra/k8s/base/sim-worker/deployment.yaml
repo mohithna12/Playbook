@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fantasyai-sim-worker
+  labels:
+    app.kubernetes.io/name: sim-worker
+    app.kubernetes.io/component: simulation
+spec:
+  replicas: 0  # Scale-to-zero via KEDA
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sim-worker
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sim-worker
+        app.kubernetes.io/component: simulation
+    spec:
+      serviceAccountName: fantasyai-app
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      tolerations:
+        - key: workload
+          value: simulation
+          effect: PreferNoSchedule
+      nodeSelector:
+        role: compute
+      containers:
+        - name: sim-worker
+          image: fantasyai-worker:latest
+          command: ["uv", "run", "arq", "app.workers.config.SimWorkerSettings"]
+          envFrom:
+            - secretRef:
+                name: fantasyai-secrets
+          env:
+            - name: ENVIRONMENT
+              value: production
+            - name: OMP_NUM_THREADS
+              value: "2"
+          resources:
+            requests:
+              cpu: 1500m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
