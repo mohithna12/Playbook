@@ -91,7 +91,7 @@ docker/.env
 *.ubj
 *.pkl
 *.joblib
-models/
+/models/
 
 # =============================================================================
 # Data (stored in S3, not in repo)
