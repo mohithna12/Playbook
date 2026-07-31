@@ -1,0 +1,10 @@
+# Default -- single engineer owns everything
+* @mohithram
+
+# Specific ownership markers for when the team grows
+app/ml/           @mohithram
+app/sim/          @mohithram
+app/domain/       @mohithram
+infra/            @mohithram
+airflow/          @mohithram
+frontend/         @mohithram

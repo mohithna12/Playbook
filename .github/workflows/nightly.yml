@@ -1,0 +1,71 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "0 6 * * *"  # 06:00 UTC daily
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+jobs:
+  # ===========================================================================
+  # Contract Tests Against Live APIs
+  # ===========================================================================
+  live-contract-tests:
+    name: Live API Contract Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true  # Upstream changes are not our bug
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      - name: Run live contract tests
+        run: uv run pytest tests/contract/test_sleeper_live.py -v
+
+      # TODO: Notify Slack on failure
+
+  # ===========================================================================
+  # Dependency Audit
+  # ===========================================================================
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Python audit
+        run: uv run pip-audit
+        continue-on-error: true
+
+      - name: Frontend audit
+        working-directory: frontend
+        run: |
+          npm ci
+          npm audit --audit-level=high
+        continue-on-error: true

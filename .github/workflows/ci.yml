@@ -1,0 +1,245 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+  UV_CACHE_DIR: /tmp/.uv-cache
+
+jobs:
+  # ===========================================================================
+  # Python: Lint, Typecheck, Import Rules
+  # ===========================================================================
+  lint-and-typecheck:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      - name: Ruff check
+        run: uv run ruff check app/ tests/ airflow/ scripts/
+
+      - name: Ruff format check
+        run: uv run ruff format --check app/ tests/ airflow/ scripts/
+
+      - name: mypy
+        run: uv run mypy app/
+
+      - name: import-linter
+        run: uv run lint-imports
+
+  # ===========================================================================
+  # Python: Unit Tests + Coverage
+  # ===========================================================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      - name: Run unit tests with coverage
+        run: |
+          uv run pytest tests/unit/ \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term \
+            -v
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  # ===========================================================================
+  # Python: Integration Tests (Postgres + Redis via testcontainers)
+  # ===========================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      - name: Run integration tests
+        run: uv run pytest tests/integration/ -v
+
+  # ===========================================================================
+  # Contract Tests (OpenAPI + Schemathesis)
+  # ===========================================================================
+  contract-tests:
+    name: Contract Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      - name: Run contract tests
+        run: uv run pytest tests/contract/ -v
+
+  # ===========================================================================
+  # OpenAPI Diff Check
+  # ===========================================================================
+  openapi-diff:
+    name: OpenAPI Diff
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      - name: Generate OpenAPI spec
+        run: uv run scripts/generate_openapi.py
+
+      - name: Check for uncommitted spec changes
+        run: |
+          if ! git diff --quiet openapi/spec.json; then
+            echo "::error::OpenAPI spec has changed but was not committed. Run 'make openapi' and commit."
+            git diff openapi/spec.json
+            exit 1
+          fi
+
+  # ===========================================================================
+  # Frontend: Lint, Typecheck, Tests
+  # ===========================================================================
+  frontend:
+    name: Frontend Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Prettier check
+        run: npx prettier --check "src/**/*.{ts,tsx,css}"
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npx vitest run
+
+  # ===========================================================================
+  # Docker: Build + Trivy Scan
+  # ===========================================================================
+  build-images:
+    name: Build & Scan Images
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        image:
+          - { name: api, file: docker/Dockerfile.api }
+          - { name: worker, file: docker/Dockerfile.worker }
+          - { name: ml, file: docker/Dockerfile.ml }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -f ${{ matrix.image.file }} -t fantasyai-${{ matrix.image.name }}:ci .
+
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: fantasyai-${{ matrix.image.name }}:ci
+          format: table
+          exit-code: 1
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+
+  # ===========================================================================
+  # Kubernetes: Validate Manifests
+  # ===========================================================================
+  k8s-validate:
+    name: Validate K8s Manifests
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -sL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | tar xz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Validate manifests
+        run: |
+          find infra/k8s/ -name '*.yaml' -not -name 'values.yaml' -not -name 'kustomization.yaml' | \
+            xargs kubeconform -strict -ignore-missing-schemas -summary

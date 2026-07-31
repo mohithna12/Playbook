@@ -1,0 +1,187 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false  # Never cancel an in-progress deploy
+
+env:
+  AWS_REGION: us-west-2
+  ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+  EKS_CLUSTER: fantasyai
+
+jobs:
+  # ===========================================================================
+  # Build and Push to ECR
+  # ===========================================================================
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        image:
+          - { name: api, file: docker/Dockerfile.api }
+          - { name: worker, file: docker/Dockerfile.worker }
+          - { name: ml, file: docker/Dockerfile.ml }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        run: |
+          IMAGE_TAG="${{ env.ECR_REGISTRY }}/fantasyai-${{ matrix.image.name }}:${{ github.sha }}"
+          docker build -f ${{ matrix.image.file }} -t $IMAGE_TAG .
+          docker push $IMAGE_TAG
+          echo "Pushed $IMAGE_TAG"
+
+  # ===========================================================================
+  # Deploy to Staging
+  # ===========================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: staging
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }}-staging --region ${{ env.AWS_REGION }}
+
+      - name: Run migrations
+        run: |
+          kubectl apply -f - <<EOF
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: migrate-${{ github.sha }}
+            namespace: fantasyai
+          spec:
+            template:
+              spec:
+                containers:
+                - name: migrate
+                  image: ${{ env.ECR_REGISTRY }}/fantasyai-api:${{ github.sha }}
+                  command: ["uv", "run", "alembic", "upgrade", "head"]
+                  envFrom:
+                  - secretRef:
+                      name: fantasyai-secrets
+                restartPolicy: Never
+            backoffLimit: 1
+          EOF
+          kubectl wait --for=condition=complete --timeout=120s job/migrate-${{ github.sha }} -n fantasyai
+
+      - name: Deploy to staging
+        run: |
+          kubectl set image deployment/fantasyai-api \
+            api=${{ env.ECR_REGISTRY }}/fantasyai-api:${{ github.sha }} \
+            -n fantasyai
+          kubectl set image deployment/fantasyai-worker \
+            worker=${{ env.ECR_REGISTRY }}/fantasyai-worker:${{ github.sha }} \
+            -n fantasyai
+          kubectl rollout status deployment/fantasyai-api -n fantasyai --timeout=120s
+          kubectl rollout status deployment/fantasyai-worker -n fantasyai --timeout=120s
+
+      - name: Smoke test staging
+        run: |
+          STAGING_URL=$(kubectl get ingress fantasyai -n fantasyai -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl --fail --retry 3 --retry-delay 5 "http://$STAGING_URL/health"
+
+  # ===========================================================================
+  # Manual Approval Gate
+  # ===========================================================================
+  approve-prod:
+    name: Approve Production Deploy
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: production  # Requires manual approval in GitHub Environment settings
+    steps:
+      - run: echo "Production deploy approved."
+
+  # ===========================================================================
+  # Deploy to Production
+  # ===========================================================================
+  deploy-prod:
+    name: Deploy to Production
+    needs: approve-prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER }} --region ${{ env.AWS_REGION }}
+
+      - name: Run migrations
+        run: |
+          kubectl apply -f - <<EOF
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: migrate-${{ github.sha }}
+            namespace: fantasyai
+          spec:
+            template:
+              spec:
+                containers:
+                - name: migrate
+                  image: ${{ env.ECR_REGISTRY }}/fantasyai-api:${{ github.sha }}
+                  command: ["uv", "run", "alembic", "upgrade", "head"]
+                  envFrom:
+                  - secretRef:
+                      name: fantasyai-secrets
+                restartPolicy: Never
+            backoffLimit: 1
+          EOF
+          kubectl wait --for=condition=complete --timeout=120s job/migrate-${{ github.sha }} -n fantasyai
+
+      - name: Rolling deploy to production
+        run: |
+          kubectl set image deployment/fantasyai-api \
+            api=${{ env.ECR_REGISTRY }}/fantasyai-api:${{ github.sha }} \
+            -n fantasyai
+          kubectl set image deployment/fantasyai-worker \
+            worker=${{ env.ECR_REGISTRY }}/fantasyai-worker:${{ github.sha }} \
+            -n fantasyai
+          kubectl rollout status deployment/fantasyai-api -n fantasyai --timeout=180s
+          kubectl rollout status deployment/fantasyai-worker -n fantasyai --timeout=180s
+
+      - name: Post-deploy health check
+        run: |
+          sleep 10
+          PROD_URL=$(kubectl get ingress fantasyai -n fantasyai -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl --fail --retry 5 --retry-delay 10 "http://$PROD_URL/health"
