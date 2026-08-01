@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     s3_raw_bucket: str = "fantasyai-raw"
     s3_models_bucket: str = "fantasyai-models"
     s3_features_bucket: str = "fantasyai-features"
+    s3_endpoint_url: str = ""  # Set to http://localhost:4566 for LocalStack
 
     # -- External APIs --
     odds_api_key: str = ""

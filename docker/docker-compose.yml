@@ -1,3 +1,13 @@
+##############################################################################
+# Local development services — $0/month
+#
+# Usage:
+#   make docker-up     → starts postgres + redis
+#   make run           → starts the FastAPI app
+#
+# Everything runs on your machine. No AWS account needed.
+##############################################################################
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -20,7 +30,7 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-    command: redis-server --maxmemory 256mb --maxmemory-policy volatile-lru
+    command: redis-server --maxmemory 128mb --maxmemory-policy volatile-lru
     volumes:
       - redis_data:/data
     healthcheck:
@@ -29,12 +39,15 @@ services:
       timeout: 3s
       retries: 5
 
+  # Optional: only needed when testing S3 uploads/downloads locally.
+  # Start with: docker compose -f docker/docker-compose.yml --profile s3 up -d
   localstack:
     image: localstack/localstack:3
+    profiles: ["s3"]
     ports:
       - "4566:4566"
     environment:
-      SERVICES: s3,secretsmanager
+      SERVICES: s3
       DEFAULT_REGION: us-west-2
     volumes:
       - localstack_data:/var/lib/localstack
