@@ -90,17 +90,14 @@ def register_error_handlers(app: FastAPI) -> None:
                 instance=str(request.url.path),
                 trace_id=_get_trace_id(request),
                 errors=[
-                    {"loc": e["loc"], "msg": e["msg"], "type": e["type"]}
-                    for e in exc.errors()
+                    {"loc": e["loc"], "msg": e["msg"], "type": e["type"]} for e in exc.errors()
                 ],
             ).model_dump(),
             media_type="application/problem+json",
         )
 
     @app.exception_handler(Exception)
-    async def unhandled_error_handler(
-        request: Request, exc: Exception
-    ) -> JSONResponse:
+    async def unhandled_error_handler(request: Request, exc: Exception) -> JSONResponse:
         import structlog
 
         logger = structlog.get_logger()

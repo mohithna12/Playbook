@@ -10,21 +10,23 @@ from typing import Any
 
 import structlog
 
-PII_DENYLIST = frozenset({
-    "email",
-    "password",
-    "token",
-    "authorization",
-    "cookie",
-    "secret",
-    "api_key",
-    "auth_subject",
-})
+PII_DENYLIST = frozenset(
+    {
+        "email",
+        "password",
+        "token",
+        "authorization",
+        "cookie",
+        "secret",
+        "api_key",
+        "auth_subject",
+    }
+)
 
 
 def _redact_pii(
-    _logger: Any, _method_name: str, event_dict: dict[str, Any]
-) -> dict[str, Any]:
+    _logger: Any, _method_name: str, event_dict: structlog.types.EventDict
+) -> structlog.types.EventDict:
     """Replace values of known-sensitive keys with '[REDACTED]'."""
     for key in list(event_dict.keys()):
         if key.lower() in PII_DENYLIST:
