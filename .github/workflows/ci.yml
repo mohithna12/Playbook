@@ -128,7 +128,7 @@ jobs:
         run: uv sync --all-extras --frozen
 
       - name: Run contract tests
-        run: uv run pytest tests/contract/ -v
+        run: uv run pytest tests/contract/ -v -p schemathesis
 
   # ===========================================================================
   # OpenAPI Diff Check

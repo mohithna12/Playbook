@@ -30,6 +30,7 @@ dependencies = [
     "opentelemetry-instrumentation-sqlalchemy>=0.49b,<1",
     "opentelemetry-instrumentation-redis>=0.49b,<1",
     "opentelemetry-instrumentation-httpx>=0.49b,<1",
+    "opentelemetry-exporter-otlp-proto-http>=1.28,<2",
     "prometheus-fastapi-instrumentator>=7,<8",
     # Logging
     "structlog>=24,<25",
@@ -116,13 +117,18 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S105", "S106", "T20"]  # allow assert, hardcoded passwords, print in tests
+# allow assert, hardcoded passwords, print, and private access in tests; TC*
+# because test apps and fixtures resolve their annotations at runtime too.
+"tests/**" = ["S101", "S105", "S106", "T20", "SLF001", "TC001", "TC002", "TC003"]
 "scripts/**" = ["T20"]                   # allow print in scripts
 "airflow/**" = ["T20"]                   # allow print in DAGs
 # SQLAlchemy resolves Mapped[...] annotations at class-creation time, so the
 # types named inside them must be importable at runtime. Hoisting them into a
 # TYPE_CHECKING block raises MappedAnnotationError on import.
 "app/models/**" = ["TC001", "TC002", "TC003"]
+# Same reason, different framework: FastAPI resolves handler and dependency
+# annotations at runtime to build the signature it injects against.
+"app/api/**" = ["TC001", "TC002", "TC003"]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = ["app.models.base.Base", "pydantic.BaseModel"]
@@ -215,20 +221,30 @@ root_packages = ["app"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "API layer depends only on schemas and services"
+# Three layers, not "app.api" over "app.services | app.schemas": siblings on a
+# shared layer must be independent of each other, which would forbid a service
+# from returning a schema object -- the natural way for a service to hand a
+# result to a router without the router reaching past it.
+name = "API depends on services, services depend on schemas"
 type = "layers"
 layers = [
     "app.api",
-    "app.services | app.schemas",
+    "app.services",
+    "app.schemas",
 ]
 
 [[tool.importlinter.contracts]]
-name = "Services depend on domain, repositories, sim, ml, llm"
-type = "independence"
-modules = [
-    "app.api",
+# Routers hold no ORM entities and build no queries; they call services. The
+# transitive path api -> services -> repositories -> models is the intended
+# one, so only direct imports are forbidden.
+name = "API layer does not touch ORM models or repositories directly"
+type = "forbidden"
+source_modules = ["app.api"]
+forbidden_modules = [
     "app.models",
+    "app.repositories",
 ]
+allow_indirect_imports = true
 
 [[tool.importlinter.contracts]]
 name = "Domain has no I/O dependencies"

@@ -49,7 +49,9 @@ test-integration: ## Run integration tests (requires Docker services)
 	$(PYTEST) tests/integration/ -v
 
 test-contract: ## Run contract tests
-	$(PYTEST) tests/contract/ -v
+	# The schemathesis pytest plugin is disabled globally in pyproject.toml
+	# (it hooks every collection); contract tests are where it earns its keep.
+	$(PYTEST) tests/contract/ -v -p schemathesis
 
 test-ml: ## Run ML pipeline tests
 	$(PYTEST) tests/ml/ -v

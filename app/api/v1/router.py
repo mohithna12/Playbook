@@ -1,17 +1,13 @@
-"""V1 API router -- aggregates all v1 sub-routers."""
+"""The ``/v1`` router. Feature routers mount here as milestones land."""
 
 from fastapi import APIRouter
 
-from app.api.v1.health import router as health_router
+from app.api.v1.meta import router as meta_router
 
 v1_router = APIRouter()
 
-# Health and readiness are mounted at root (not under /v1)
-# so Kubernetes probes don't need the version prefix.
-# All other routers will be mounted under /v1.
+# Health and readiness mount at the root, not under /v1: Kubernetes probes and
+# the ALB health check should not have to track an API version.
+v1_router.include_router(meta_router)
 
-# Placeholder: additional routers will be added as features are built.
-# from app.api.v1.leagues import router as leagues_router
-# v1_router.include_router(leagues_router, prefix="/leagues")
-
-__all__ = ["health_router", "v1_router"]
+__all__ = ["v1_router"]
