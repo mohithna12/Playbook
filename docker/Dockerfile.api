@@ -1,5 +1,5 @@
 # =============================================================================
-# fantasyai-api -- FastAPI application tier
+# playbook-api -- FastAPI application tier
 # No XGBoost, no ML dependencies. ~280 MB.
 # =============================================================================
 FROM python:3.12-slim AS base

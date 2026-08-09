@@ -66,7 +66,7 @@ def create_app() -> FastAPI:
     settings = get_settings()
 
     app = FastAPI(
-        title="FantasyAI",
+        title="Playbook",
         description="ML-backed fantasy football decision copilot",
         version=settings.service_version,
         docs_url="/docs" if settings.is_development else None,

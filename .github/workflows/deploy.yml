@@ -11,7 +11,7 @@ concurrency:
 env:
   AWS_REGION: us-west-2
   ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
-  EKS_CLUSTER: fantasyai
+  EKS_CLUSTER: playbook
 
 jobs:
   # ===========================================================================
@@ -44,7 +44,7 @@ jobs:
 
       - name: Build and push
         run: |
-          IMAGE_TAG="${{ env.ECR_REGISTRY }}/fantasyai-${{ matrix.image.name }}:${{ github.sha }}"
+          IMAGE_TAG="${{ env.ECR_REGISTRY }}/playbook-${{ matrix.image.name }}:${{ github.sha }}"
           docker build -f ${{ matrix.image.file }} -t $IMAGE_TAG .
           docker push $IMAGE_TAG
           echo "Pushed $IMAGE_TAG"
@@ -80,36 +80,36 @@ jobs:
           kind: Job
           metadata:
             name: migrate-${{ github.sha }}
-            namespace: fantasyai
+            namespace: playbook
           spec:
             template:
               spec:
                 containers:
                 - name: migrate
-                  image: ${{ env.ECR_REGISTRY }}/fantasyai-api:${{ github.sha }}
+                  image: ${{ env.ECR_REGISTRY }}/playbook-api:${{ github.sha }}
                   command: ["uv", "run", "alembic", "upgrade", "head"]
                   envFrom:
                   - secretRef:
-                      name: fantasyai-secrets
+                      name: playbook-secrets
                 restartPolicy: Never
             backoffLimit: 1
           EOF
-          kubectl wait --for=condition=complete --timeout=120s job/migrate-${{ github.sha }} -n fantasyai
+          kubectl wait --for=condition=complete --timeout=120s job/migrate-${{ github.sha }} -n playbook
 
       - name: Deploy to staging
         run: |
-          kubectl set image deployment/fantasyai-api \
-            api=${{ env.ECR_REGISTRY }}/fantasyai-api:${{ github.sha }} \
-            -n fantasyai
-          kubectl set image deployment/fantasyai-worker \
-            worker=${{ env.ECR_REGISTRY }}/fantasyai-worker:${{ github.sha }} \
-            -n fantasyai
-          kubectl rollout status deployment/fantasyai-api -n fantasyai --timeout=120s
-          kubectl rollout status deployment/fantasyai-worker -n fantasyai --timeout=120s
+          kubectl set image deployment/playbook-api \
+            api=${{ env.ECR_REGISTRY }}/playbook-api:${{ github.sha }} \
+            -n playbook
+          kubectl set image deployment/playbook-worker \
+            worker=${{ env.ECR_REGISTRY }}/playbook-worker:${{ github.sha }} \
+            -n playbook
+          kubectl rollout status deployment/playbook-api -n playbook --timeout=120s
+          kubectl rollout status deployment/playbook-worker -n playbook --timeout=120s
 
       - name: Smoke test staging
         run: |
-          STAGING_URL=$(kubectl get ingress fantasyai -n fantasyai -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          STAGING_URL=$(kubectl get ingress playbook -n playbook -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           curl --fail --retry 3 --retry-delay 5 "http://$STAGING_URL/health"
 
   # ===========================================================================
@@ -153,35 +153,35 @@ jobs:
           kind: Job
           metadata:
             name: migrate-${{ github.sha }}
-            namespace: fantasyai
+            namespace: playbook
           spec:
             template:
               spec:
                 containers:
                 - name: migrate
-                  image: ${{ env.ECR_REGISTRY }}/fantasyai-api:${{ github.sha }}
+                  image: ${{ env.ECR_REGISTRY }}/playbook-api:${{ github.sha }}
                   command: ["uv", "run", "alembic", "upgrade", "head"]
                   envFrom:
                   - secretRef:
-                      name: fantasyai-secrets
+                      name: playbook-secrets
                 restartPolicy: Never
             backoffLimit: 1
           EOF
-          kubectl wait --for=condition=complete --timeout=120s job/migrate-${{ github.sha }} -n fantasyai
+          kubectl wait --for=condition=complete --timeout=120s job/migrate-${{ github.sha }} -n playbook
 
       - name: Rolling deploy to production
         run: |
-          kubectl set image deployment/fantasyai-api \
-            api=${{ env.ECR_REGISTRY }}/fantasyai-api:${{ github.sha }} \
-            -n fantasyai
-          kubectl set image deployment/fantasyai-worker \
-            worker=${{ env.ECR_REGISTRY }}/fantasyai-worker:${{ github.sha }} \
-            -n fantasyai
-          kubectl rollout status deployment/fantasyai-api -n fantasyai --timeout=180s
-          kubectl rollout status deployment/fantasyai-worker -n fantasyai --timeout=180s
+          kubectl set image deployment/playbook-api \
+            api=${{ env.ECR_REGISTRY }}/playbook-api:${{ github.sha }} \
+            -n playbook
+          kubectl set image deployment/playbook-worker \
+            worker=${{ env.ECR_REGISTRY }}/playbook-worker:${{ github.sha }} \
+            -n playbook
+          kubectl rollout status deployment/playbook-api -n playbook --timeout=180s
+          kubectl rollout status deployment/playbook-worker -n playbook --timeout=180s
 
       - name: Post-deploy health check
         run: |
           sleep 10
-          PROD_URL=$(kubectl get ingress fantasyai -n fantasyai -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          PROD_URL=$(kubectl get ingress playbook -n playbook -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           curl --fail --retry 5 --retry-delay 10 "http://$PROD_URL/health"

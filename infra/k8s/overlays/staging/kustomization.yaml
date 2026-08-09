@@ -8,7 +8,7 @@ patches:
   # Staging: single replica for API, minimal resources
   - target:
       kind: Deployment
-      name: fantasyai-api
+      name: playbook-api
     patch: |
       - op: replace
         path: /spec/replicas
@@ -32,7 +32,7 @@ patches:
   # Staging: single worker
   - target:
       kind: Deployment
-      name: fantasyai-worker
+      name: playbook-worker
     patch: |
       - op: replace
         path: /spec/replicas
@@ -44,7 +44,7 @@ patches:
   # Staging: single pgbouncer
   - target:
       kind: Deployment
-      name: fantasyai-pgbouncer
+      name: playbook-pgbouncer
     patch: |
       - op: replace
         path: /spec/replicas
@@ -53,7 +53,7 @@ patches:
   # Staging: lower HPA limits
   - target:
       kind: HorizontalPodAutoscaler
-      name: fantasyai-api
+      name: playbook-api
     patch: |
       - op: replace
         path: /spec/minReplicas

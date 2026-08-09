@@ -1,5 +1,5 @@
 # =============================================================================
-# fantasyai-ml -- ML training and batch inference
+# playbook-ml -- ML training and batch inference
 # Full ML stack: XGBoost, scikit-learn, pandas, SHAP, Optuna. ~900 MB.
 # Used by Airflow KubernetesExecutor for training and inference tasks.
 # =============================================================================

@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: fantasyai
+namespace: playbook
 
 resources:
   - namespace.yaml
@@ -19,4 +19,4 @@ resources:
   - network-policies/allow-worker.yaml
 
 commonLabels:
-  app.kubernetes.io/part-of: fantasyai
+  app.kubernetes.io/part-of: playbook

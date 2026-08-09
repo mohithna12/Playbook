@@ -9,7 +9,7 @@ resources:
 patches:
   - target:
       kind: Deployment
-      name: fantasyai-api
+      name: playbook-api
     patch: |
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
@@ -17,7 +17,7 @@ patches:
 
   - target:
       kind: Deployment
-      name: fantasyai-worker
+      name: playbook-worker
     patch: |
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value

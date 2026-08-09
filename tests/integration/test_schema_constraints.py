@@ -57,7 +57,7 @@ async def _model_version(
         version=version,
         position=Position.WR,
         algorithm="xgboost",
-        artifact_uri="s3://fantasyai-models/proj_wr/2026.08.01-a1/model.ubj",
+        artifact_uri="s3://playbook-models/proj_wr/2026.08.01-a1/model.ubj",
         feature_set_version="fs_v1",
         hyperparameters={"max_depth": 6},
         training_window={"start": "2018-W01", "end": "2025-W18", "n_rows": 48213},

@@ -18,7 +18,7 @@ from app.core.auth import ClerkVerifier, JWKSCache
 from app.core.errors import UnauthorizedError
 
 ISSUER = "https://clerk.test.example"
-AUDIENCE = "fantasyai"
+AUDIENCE = "playbook"
 JWKS_URL = f"{ISSUER}/.well-known/jwks.json"
 KID = "test-key-1"
 OTHER_KID = "test-key-2"

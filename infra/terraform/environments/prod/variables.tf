@@ -1,6 +1,6 @@
 variable "project" {
   type    = string
-  default = "fantasyai"
+  default = "playbook"
 }
 
 variable "environment" {

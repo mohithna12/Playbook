@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fantasyai-worker
+  name: playbook-worker
   labels:
     app.kubernetes.io/name: worker
     app.kubernetes.io/component: worker
@@ -16,7 +16,7 @@ spec:
         app.kubernetes.io/name: worker
         app.kubernetes.io/component: worker
     spec:
-      serviceAccountName: fantasyai-app
+      serviceAccountName: playbook-app
       terminationGracePeriodSeconds: 60  # Allow in-flight jobs to finish
       securityContext:
         runAsNonRoot: true
@@ -26,11 +26,11 @@ spec:
           type: RuntimeDefault
       containers:
         - name: worker
-          image: fantasyai-worker:latest
+          image: playbook-worker:latest
           command: ["uv", "run", "arq", "app.workers.config.WorkerSettings"]
           envFrom:
             - secretRef:
-                name: fantasyai-secrets
+                name: playbook-secrets
           env:
             - name: ENVIRONMENT
               value: production

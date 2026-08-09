@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fantasyai-pgbouncer
+  name: playbook-pgbouncer
   labels:
     app.kubernetes.io/name: pgbouncer
     app.kubernetes.io/component: database-proxy
@@ -28,10 +28,10 @@ spec:
               name: pgbouncer
           envFrom:
             - secretRef:
-                name: fantasyai-secrets
+                name: playbook-secrets
           env:
             - name: PGBOUNCER_DATABASE
-              value: fantasyai
+              value: playbook
             - name: PGBOUNCER_POOL_MODE
               value: transaction
             - name: PGBOUNCER_DEFAULT_POOL_SIZE

@@ -13,7 +13,7 @@ from app.models.base import Base, TimestampMixin
 
 
 class User(Base, TimestampMixin):
-    """A FantasyAI account, keyed to a Clerk subject.
+    """A Playbook account, keyed to a Clerk subject.
 
     Soft-deleted (``deleted_at``) rather than removed, because league
     memberships and jobs reference users and an account deletion should not

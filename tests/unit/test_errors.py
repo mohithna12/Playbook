@@ -84,8 +84,8 @@ def test_detail_defaults_to_title() -> None:
 
 
 def test_type_uri_is_stable_and_namespaced() -> None:
-    assert NotFoundError().type_uri == "https://api.fantasyai.dev/errors/not-found"
-    assert LeagueNotSyncedError().type_uri == "https://api.fantasyai.dev/errors/league-not-synced"
+    assert NotFoundError().type_uri == "https://api.playbook.dev/errors/not-found"
+    assert LeagueNotSyncedError().type_uri == "https://api.playbook.dev/errors/league-not-synced"
 
 
 def test_subclass_keeps_parent_status_with_its_own_slug() -> None:
@@ -113,7 +113,7 @@ async def test_problem_json_shape(error_client: AsyncClient) -> None:
     assert response.headers["content-type"].startswith(PROBLEM_JSON)
 
     body = response.json()
-    assert body["type"] == "https://api.fantasyai.dev/errors/not-found"
+    assert body["type"] == "https://api.playbook.dev/errors/not-found"
     assert body["title"] == "Not Found"
     assert body["status"] == 404
     assert body["detail"] == "League 123 not found"
@@ -139,7 +139,7 @@ async def test_unhandled_exception_becomes_problem_json(error_client: AsyncClien
     assert response.headers["content-type"].startswith(PROBLEM_JSON)
 
     body = response.json()
-    assert body["type"] == "https://api.fantasyai.dev/errors/internal"
+    assert body["type"] == "https://api.playbook.dev/errors/internal"
     assert "database on fire" not in body["detail"]
 
 
@@ -149,7 +149,7 @@ async def test_unknown_route_is_problem_json(client: AsyncClient) -> None:
 
     assert response.status_code == 404
     assert response.headers["content-type"].startswith(PROBLEM_JSON)
-    assert response.json()["type"] == "https://api.fantasyai.dev/errors/not-found"
+    assert response.json()["type"] == "https://api.playbook.dev/errors/not-found"
 
 
 async def test_validation_error_populates_field_errors(error_client: AsyncClient) -> None:
@@ -160,6 +160,6 @@ async def test_validation_error_populates_field_errors(error_client: AsyncClient
     assert response.headers["content-type"].startswith(PROBLEM_JSON)
 
     body = response.json()
-    assert body["type"] == "https://api.fantasyai.dev/errors/validation-failed"
+    assert body["type"] == "https://api.playbook.dev/errors/validation-failed"
     assert len(body["errors"]) == 1
     assert body["errors"][0]["loc"] == ["query", "week"]

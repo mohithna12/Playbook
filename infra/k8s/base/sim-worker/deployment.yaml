@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: fantasyai-sim-worker
+  name: playbook-sim-worker
   labels:
     app.kubernetes.io/name: sim-worker
     app.kubernetes.io/component: simulation
@@ -16,7 +16,7 @@ spec:
         app.kubernetes.io/name: sim-worker
         app.kubernetes.io/component: simulation
     spec:
-      serviceAccountName: fantasyai-app
+      serviceAccountName: playbook-app
       terminationGracePeriodSeconds: 60
       securityContext:
         runAsNonRoot: true
@@ -32,11 +32,11 @@ spec:
         role: compute
       containers:
         - name: sim-worker
-          image: fantasyai-worker:latest
+          image: playbook-worker:latest
           command: ["uv", "run", "arq", "app.workers.config.SimWorkerSettings"]
           envFrom:
             - secretRef:
-                name: fantasyai-secrets
+                name: playbook-secrets
           env:
             - name: ENVIRONMENT
               value: production

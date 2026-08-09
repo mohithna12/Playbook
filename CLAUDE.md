@@ -1,7 +1,7 @@
 # CLAUDE.md -- Project Instructions for Claude Code
 
 ## Project
-FantasyAI: an ML-backed fantasy football decision copilot. Modular Python monolith (FastAPI + ARQ workers + Airflow) with a Next.js frontend.
+Playbook: an ML-backed fantasy football decision copilot. Modular Python monolith (FastAPI + ARQ workers + Airflow) with a Next.js frontend.
 
 ## Repository Layout
 - `app/` -- Python backend (FastAPI API, services, domain, repositories, ORM models, workers, ML, simulation, LLM)

@@ -14,14 +14,14 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: fantasyai
-      POSTGRES_PASSWORD: fantasyai
-      POSTGRES_DB: fantasyai
+      POSTGRES_USER: playbook
+      POSTGRES_PASSWORD: playbook
+      POSTGRES_DB: playbook
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fantasyai"]
+      test: ["CMD-SHELL", "pg_isready -U playbook"]
       interval: 5s
       timeout: 3s
       retries: 5

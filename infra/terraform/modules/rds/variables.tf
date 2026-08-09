@@ -40,12 +40,12 @@ variable "max_allocated_storage" {
 
 variable "database_name" {
   type    = string
-  default = "fantasyai"
+  default = "playbook"
 }
 
 variable "master_username" {
   type    = string
-  default = "fantasyai"
+  default = "playbook"
 }
 
 variable "master_password" {

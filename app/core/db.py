@@ -41,7 +41,7 @@ def get_engine() -> AsyncEngine:
         connect_args={
             "server_settings": {
                 "statement_timeout": str(settings.database_statement_timeout_ms),
-                "application_name": "fantasyai",
+                "application_name": "playbook",
             }
         },
     )

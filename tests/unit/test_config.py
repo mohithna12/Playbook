@@ -8,7 +8,7 @@ from app.core.config import Settings
 PRODUCTION_AUTH = {
     "clerk_jwks_url": "https://clerk.example.com/.well-known/jwks.json",
     "clerk_issuer": "https://clerk.example.com",
-    "clerk_audience": "fantasyai",
+    "clerk_audience": "playbook",
 }
 
 

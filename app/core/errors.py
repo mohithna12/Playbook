@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 logger = structlog.get_logger()
 
-ERROR_TYPE_BASE = "https://api.fantasyai.dev/errors"
+ERROR_TYPE_BASE = "https://api.playbook.dev/errors"
 
 PROBLEM_JSON = "application/problem+json"
 

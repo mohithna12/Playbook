@@ -97,7 +97,7 @@
   },
   "info": {
     "description": "ML-backed fantasy football decision copilot",
-    "title": "FantasyAI",
+    "title": "Playbook",
     "version": "0.1.0"
   },
   "openapi": "3.1.0",

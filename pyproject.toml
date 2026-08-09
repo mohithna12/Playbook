@@ -1,5 +1,5 @@
 [project]
-name = "fantasyai"
+name = "playbook"
 version = "0.1.0"
 description = "ML-backed fantasy football decision copilot"
 requires-python = ">=3.11"

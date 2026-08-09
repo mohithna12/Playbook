@@ -1,6 +1,6 @@
-# FantasyAI Repository Structure
+# Playbook Repository Structure
 
-**Monorepo layout for the FantasyAI decision-support system.**
+**Monorepo layout for the Playbook decision-support system.**
 
 This document is the canonical reference for where code lives, who owns it, and how it is organized. Read this before creating a file.
 
@@ -9,7 +9,7 @@ This document is the canonical reference for where code lives, who owns it, and 
 ## Top-Level Layout
 
 ```
-fantasyai/
+playbook/
   app/                  # Python backend (FastAPI + workers + ML)
   frontend/             # Next.js web application
   infra/                # Terraform + Kubernetes manifests
@@ -621,7 +621,7 @@ docker/
 ### Root Files
 
 ```
-fantasyai/
+playbook/
   pyproject.toml                 # Python project config: dependencies, ruff, mypy, pytest, import-linter
   uv.lock                       # Pinned dependency lockfile
   alembic.ini                   # Alembic migration config
@@ -686,7 +686,7 @@ fantasyai/
 | Element | Convention | Example |
 |---------|-----------|---------|
 | Resource files | `kebab-case.yaml` | `default-deny.yaml` |
-| Resource names | `kebab-case` | `fantasyai-api` |
+| Resource names | `kebab-case` | `playbook-api` |
 | Labels | `app.kubernetes.io/*` | `app.kubernetes.io/name: api` |
 
 ### Database

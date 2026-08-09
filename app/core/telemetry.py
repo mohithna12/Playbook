@@ -54,7 +54,7 @@ def setup_telemetry() -> None:
     settings = get_settings()
     resource = Resource.create(
         {
-            "service.name": "fantasyai-api",
+            "service.name": "playbook-api",
             "service.version": settings.service_version,
             "deployment.environment": settings.environment,
         }

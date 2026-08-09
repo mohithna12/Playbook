@@ -22,7 +22,7 @@ variable "oidc_provider_url" {
 
 variable "namespace" {
   type    = string
-  default = "fantasyai"
+  default = "playbook"
 }
 
 variable "s3_bucket_arns" {

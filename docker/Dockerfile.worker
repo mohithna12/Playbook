@@ -1,5 +1,5 @@
 # =============================================================================
-# fantasyai-worker -- ARQ workers (general + simulation)
+# playbook-worker -- ARQ workers (general + simulation)
 # Includes NumPy/SciPy for simulation, LLM SDK for explanations. ~420 MB.
 # =============================================================================
 FROM python:3.12-slim AS base

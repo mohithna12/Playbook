@@ -54,7 +54,7 @@ class UserRepository(Repository[User]):
         # ``email`` is NOT NULL and unique. Clerk omits it from the token
         # unless the JWT template includes it, so synthesize a stable
         # placeholder; a later profile sync overwrites it.
-        resolved_email = email or f"{auth_subject}@users.noreply.fantasyai.dev"
+        resolved_email = email or f"{auth_subject}@users.noreply.playbook.dev"
 
         statement = (
             insert(User)

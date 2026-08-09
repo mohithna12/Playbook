@@ -96,9 +96,9 @@ docker-down: ## Stop local dev services
 	docker compose -f docker/docker-compose.yml down
 
 docker-build: ## Build all Docker images
-	docker build -f docker/Dockerfile.api -t fantasyai-api .
-	docker build -f docker/Dockerfile.worker -t fantasyai-worker .
-	docker build -f docker/Dockerfile.ml -t fantasyai-ml .
+	docker build -f docker/Dockerfile.api -t playbook-api .
+	docker build -f docker/Dockerfile.worker -t playbook-worker .
+	docker build -f docker/Dockerfile.ml -t playbook-ml .
 
 # =============================================================================
 # OpenAPI

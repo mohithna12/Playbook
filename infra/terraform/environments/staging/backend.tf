@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "fantasyai-terraform-state"
+    bucket         = "playbook-terraform-state"
     key            = "staging/terraform.tfstate"
     region         = "us-west-2"
-    dynamodb_table = "fantasyai-terraform-locks"
+    dynamodb_table = "playbook-terraform-locks"
     encrypt        = true
   }
 }

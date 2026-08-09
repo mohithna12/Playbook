@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     otel_sample_ratio: float = 0.1
 
     # -- Database --
-    database_url: str = "postgresql+asyncpg://fantasyai:fantasyai@localhost:5432/fantasyai"
+    database_url: str = "postgresql+asyncpg://playbook:playbook@localhost:5432/playbook"
     database_pool_size: int = 10
     database_max_overflow: int = 5
     database_statement_timeout_ms: int = 5000
@@ -66,9 +66,9 @@ class Settings(BaseSettings):
 
     # -- AWS --
     aws_region: str = "us-west-2"
-    s3_raw_bucket: str = "fantasyai-raw"
-    s3_models_bucket: str = "fantasyai-models"
-    s3_features_bucket: str = "fantasyai-features"
+    s3_raw_bucket: str = "playbook-raw"
+    s3_models_bucket: str = "playbook-models"
+    s3_features_bucket: str = "playbook-features"
     s3_endpoint_url: str = ""  # Set to http://localhost:4566 for LocalStack
 
     # -- External APIs --

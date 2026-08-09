@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 pytestmark = pytest.mark.integration
 
 ISSUER = "https://clerk.test.example"
-AUDIENCE = "fantasyai"
+AUDIENCE = "playbook"
 KID = "integration-key"
 
 
@@ -130,7 +130,7 @@ class TestUserProvisioning:
         """`email` is NOT NULL; a Clerk template that omits it must not 500."""
         user = await UserRepository(session).get_or_create("user_clerk_3", None)
 
-        assert user.email.endswith("@users.noreply.fantasyai.dev")
+        assert user.email.endswith("@users.noreply.playbook.dev")
         assert "user_clerk_3" in user.email
 
     async def test_signing_in_again_reactivates_a_soft_deleted_account(
@@ -255,7 +255,7 @@ class TestAuthenticatedRequests:
         assert response.status_code == 401
         assert response.headers["content-type"].startswith(PROBLEM_JSON)
         assert response.headers["WWW-Authenticate"] == "Bearer"
-        assert response.json()["type"] == "https://api.fantasyai.dev/errors/unauthorized"
+        assert response.json()["type"] == "https://api.playbook.dev/errors/unauthorized"
 
     async def test_a_garbage_token_is_401(self, api_client: AsyncClient) -> None:
         response = await api_client.get("/v1/me", headers={"Authorization": "Bearer not-a-jwt"})

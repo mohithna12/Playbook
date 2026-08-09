@@ -44,7 +44,7 @@ ALGORITHMS = ["RS256"]
 
 @dataclass(frozen=True, slots=True)
 class AuthenticatedSubject:
-    """A verified token's claims. Not yet a FantasyAI user -- see the user repo.
+    """A verified token's claims. Not yet a Playbook user -- see the user repo.
 
     ``subject`` is Clerk's ``sub``, which is the stable join key to
     ``users.auth_subject``. Email is carried through when Clerk includes it in
