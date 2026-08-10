@@ -3,7 +3,7 @@
 # Full ML stack: XGBoost, scikit-learn, pandas, SHAP, Optuna. ~900 MB.
 # Used by Airflow KubernetesExecutor for training and inference tasks.
 # =============================================================================
-FROM python:3.12-slim AS base
+FROM python:3.14-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
