@@ -31,7 +31,7 @@ dependencies = [
     "opentelemetry-instrumentation-redis>=0.49b,<1",
     "opentelemetry-instrumentation-httpx>=0.49b,<1",
     "opentelemetry-exporter-otlp-proto-http>=1.28,<2",
-    "prometheus-fastapi-instrumentator>=7,<8",
+    "prometheus-fastapi-instrumentator>=8.1.0,<9",
     # Logging
     "structlog>=24,<25",
     # AWS
