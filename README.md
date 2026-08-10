@@ -153,3 +153,7 @@ A few details that are easy to get wrong and are deliberate here:
 
 `make check` and `make test-unit` must pass before a commit; CI additionally
 runs integration and contract tests and fails on an uncommitted OpenAPI diff.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
