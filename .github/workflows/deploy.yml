@@ -1,8 +1,22 @@
 name: Deploy
 
+# Manual only. This pipeline assumes an AWS account -- ECR, EKS, and an OIDC
+# role -- that does not exist yet, so firing it on every push to main just
+# paints the history red and trains everyone to ignore a failing Deploy badge.
+# Restore the `push` trigger once ECR_REGISTRY and AWS_DEPLOY_ROLE_ARN are set:
+#
+#   on:
+#     push:
+#       branches: [main]
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: staging
+        type: choice
+        options: [staging, prod]
 
 concurrency:
   group: deploy

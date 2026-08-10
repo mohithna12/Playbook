@@ -1,6 +1,10 @@
 name: CI
 
+# Both triggers matter: work lands directly on main here, so a
+# pull_request-only trigger means CI never actually runs.
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
 

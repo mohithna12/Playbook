@@ -53,6 +53,12 @@ ml = [
     "xgboost>=2.1,<3",
     "scikit-learn>=1.5,<2",
     "shap>=0.46,<1",
+    # Floor numba explicitly. shap pulls it in transitively, and without a
+    # floor the resolver backtracks to numba 0.53 (2021) to satisfy our numpy
+    # range -- which pins llvmlite 0.36, a version that cannot build on any
+    # Python we support. The failure surfaces as an llvmlite build error with
+    # no mention of numba.
+    "numba>=0.61",
     "optuna>=4,<5",
     "pyarrow>=18,<19",
 ]
