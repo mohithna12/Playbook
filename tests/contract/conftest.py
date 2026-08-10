@@ -11,10 +11,12 @@ driven from two loops raises "another operation is in progress". The app gets
 its own engine and a fresh session per request, which is what it does in
 production anyway.
 
-Redis is wired in as well, because ``/ready`` reports 503 without it and
-Schemathesis -- correctly -- treats any 5xx as a failure. The contract suite
-therefore needs a Docker daemon or ``TEST_REDIS_URL``; the unit and integration
-suites cover the degraded paths.
+Redis is deliberately *not* wired in. The probe endpoints that need it are
+excluded from the suite (see the test module), and a shared redis-py client
+cannot survive Hypothesis's per-example event loops -- a pooled connection
+opened on one loop raises "attached to a different loop" when reused from the
+next. The cache and rate limiter both fail open, so the endpoints under test
+behave correctly without it.
 """
 
 from __future__ import annotations
@@ -52,11 +54,8 @@ def contract_engine(migrated_url: str) -> AsyncEngine:
 
 
 @pytest.fixture(autouse=True)
-def wire_app_dependencies(
-    contract_engine: AsyncEngine,
-    redis_client: object,
-) -> Iterator[None]:
-    """Point the app under test at the migrated database and a live Redis."""
+def wire_app_dependencies(contract_engine: AsyncEngine) -> Iterator[None]:
+    """Point the app under test at the migrated database."""
     sessionmaker = async_sessionmaker(bind=contract_engine, expire_on_commit=False)
 
     async def _session_override() -> AsyncIterator[AsyncSession]:

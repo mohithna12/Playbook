@@ -32,6 +32,15 @@ schemathesis.experimental.OPEN_API_3_1.enable()
 
 schema = schemathesis.openapi.from_dict(json.loads(SPEC_PATH.read_text()))
 
+# /health and /ready are Kubernetes probes, not part of the contract a client
+# codes against, and including them costs more than it proves. /ready reports
+# 503 when a dependency is down -- correct behaviour and documented in the
+# spec, but Schemathesis flags any 5xx as a server error. Wiring a live Redis
+# in to avoid that is worse: Hypothesis runs each example in its own event
+# loop, and a pooled redis-py connection opened on one loop raises
+# "attached to a different loop" when reused from the next.
+schema = schema.exclude(path_regex=r"^/(health|ready)$")
+
 
 @schema.parametrize()
 @settings(

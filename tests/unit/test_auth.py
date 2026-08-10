@@ -14,7 +14,12 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from app.core.auth import ClerkVerifier, JWKSCache
+from app.core.auth import (
+    JWKS_REFRESH_COOLDOWN_SECONDS,
+    JWKS_TTL_SECONDS,
+    ClerkVerifier,
+    JWKSCache,
+)
 from app.core.errors import UnauthorizedError
 
 ISSUER = "https://clerk.test.example"
@@ -221,7 +226,12 @@ async def test_key_rotation_is_picked_up_before_the_ttl_expires(
     rotated = dict(jwk)
     rotated["kid"] = OTHER_KID
     cache._source = {OTHER_KID: rotated}
-    cache._last_attempt_at = 0.0  # cooldown elapsed
+    # Relative to the clock, not zero. `time.monotonic()` counts from an
+    # arbitrary epoch -- host uptime on Linux -- so 0.0 only reads as "long
+    # ago" on a machine that has been up longer than the cooldown. On a
+    # freshly booted CI runner it reads as "just now" and the refresh is
+    # suppressed, which fails here and nowhere else.
+    cache._last_attempt_at = time.monotonic() - JWKS_REFRESH_COOLDOWN_SECONDS - 1
 
     result = await verifier.verify(make_token(private_key, kid=OTHER_KID))
 
@@ -238,8 +248,10 @@ async def test_jwks_outage_serves_the_stale_cache(keypair: tuple[Any, dict[str, 
     await verifier.verify(make_token(private_key))
 
     cache._fail = True
-    cache._fetched_at = 0.0  # force staleness
-    cache._last_attempt_at = 0.0
+    # Same reasoning as above: age these relative to the monotonic clock so the
+    # cache is genuinely stale and genuinely past its cooldown on any host.
+    cache._fetched_at = time.monotonic() - JWKS_TTL_SECONDS - 1
+    cache._last_attempt_at = time.monotonic() - JWKS_REFRESH_COOLDOWN_SECONDS - 1
 
     result = await verifier.verify(make_token(private_key))
     assert result.subject == "user_2abc"

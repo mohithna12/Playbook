@@ -173,6 +173,10 @@ jobs:
     name: Frontend Checks
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # The frontend is scaffolding until M15 -- package.json exists but no
+    # lockfile does, so `npm ci` and setup-node's cache both fail. Runs
+    # automatically once a lockfile is committed.
+    if: hashFiles('frontend/package-lock.json') != ''
     defaults:
       run:
         working-directory: frontend
@@ -220,7 +224,9 @@ jobs:
         run: docker build -f ${{ matrix.image.file }} -t playbook-${{ matrix.image.name }}:ci .
 
       - name: Trivy scan
-        uses: aquasecurity/trivy-action@master
+        # Pinned, not @master: a moving ref means a third party can break this
+        # repo's CI without anything here changing, which is what happened.
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: playbook-${{ matrix.image.name }}:ci
           format: table
