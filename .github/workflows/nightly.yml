@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 5
     continue-on-error: true  # Upstream changes are not our bug
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: astral-sh/setup-uv@v4
         with:
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: astral-sh/setup-uv@v4
         with:

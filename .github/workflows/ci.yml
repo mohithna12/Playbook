@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: astral-sh/setup-uv@v4
         with:
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: astral-sh/setup-uv@v4
         with:
@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: astral-sh/setup-uv@v4
         with:
@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: astral-sh/setup-uv@v4
         with:
@@ -142,7 +142,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: astral-sh/setup-uv@v4
         with:
@@ -177,7 +177,7 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The frontend is scaffolding until M15: package.json exists, a lockfile
       # does not, so setup-node's cache lookup and `npm ci` both fail. The
@@ -235,7 +235,7 @@ jobs:
           - { name: worker, file: docker/Dockerfile.worker }
           - { name: ml, file: docker/Dockerfile.ml }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build image
         run: docker build -f ${{ matrix.image.file }} -t playbook-${{ matrix.image.name }}:ci .
@@ -259,7 +259,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install kubeconform
         run: |
