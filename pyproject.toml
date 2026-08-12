@@ -30,7 +30,7 @@ dependencies = [
     # Telemetry
     "opentelemetry-api>=1.28,<2",
     "opentelemetry-sdk>=1.28,<2",
-    "opentelemetry-instrumentation-fastapi>=0.49b,<1",
+    "opentelemetry-instrumentation-fastapi>=0.65b0,<1",
     "opentelemetry-instrumentation-sqlalchemy>=0.49b,<1",
     "opentelemetry-instrumentation-redis>=0.49b,<1",
     "opentelemetry-instrumentation-httpx>=0.49b,<1",
