@@ -73,6 +73,18 @@ class ScopedRepository(Repository[ModelT]):
         )
 
 
+def rows_affected(result: Any) -> int:
+    """The row count of a DML statement.
+
+    ``session.execute`` is typed as returning ``Result``, but an UPDATE or
+    DELETE actually yields a ``CursorResult``, which is the only one carrying
+    ``rowcount``. Guarded transitions read that count to find out whether they
+    won a race, so this narrowing happens in one place rather than at each of
+    them.
+    """
+    return int(result.rowcount)
+
+
 def clamp_page_size(limit: int | None) -> int:
     """Bound a caller-supplied page size. Absent means the default."""
     if limit is None:
