@@ -267,6 +267,12 @@
               "application/problem+json": {}
             },
             "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {}
+            },
+            "description": "A dependency the request needs is unavailable"
           }
         },
         "summary": "Liveness probe",
@@ -388,6 +394,12 @@
               "application/problem+json": {}
             },
             "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {}
+            },
+            "description": "A dependency the request needs is unavailable"
           }
         },
         "security": [
@@ -455,6 +467,12 @@
               "application/problem+json": {}
             },
             "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {}
+            },
+            "description": "A dependency the request needs is unavailable"
           }
         },
         "security": [
@@ -520,6 +538,12 @@
               "application/problem+json": {}
             },
             "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {}
+            },
+            "description": "A dependency the request needs is unavailable"
           }
         },
         "security": [
@@ -581,6 +605,12 @@
               "application/problem+json": {}
             },
             "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {}
+            },
+            "description": "A dependency the request needs is unavailable"
           }
         },
         "summary": "Active model versions and their metrics",
@@ -633,6 +663,12 @@
               "application/problem+json": {}
             },
             "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {}
+            },
+            "description": "A dependency the request needs is unavailable"
           }
         },
         "summary": "Current season and week",

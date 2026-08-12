@@ -41,6 +41,10 @@ COMMON_RESPONSES: dict[int | str, dict[str, object]] = {
     422: {"description": "Validation failed", "content": {PROBLEM_JSON: {}}},
     429: {"description": "Rate limit exceeded", "content": {PROBLEM_JSON: {}}},
     500: {"description": "Internal error", "content": {PROBLEM_JSON: {}}},
+    503: {
+        "description": "A dependency the request needs is unavailable",
+        "content": {PROBLEM_JSON: {}},
+    },
 }
 
 

@@ -21,7 +21,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core import rate_limit
 from app.core.auth import AuthenticatedSubject, get_verifier
 from app.core.db import get_session
-from app.core.errors import RateLimitedError, UnauthorizedError
+from app.core.errors import (
+    RateLimitedError,
+    ServiceUnavailableError,
+    UnauthorizedError,
+)
 from app.core.rate_limit import LimitTier
 from app.domain.identity import AuthenticatedUser
 from app.services.identity import IdentityService
@@ -58,7 +62,17 @@ async def get_auth_subject(
     """Verify the bearer token. Raises 401 on anything short of a valid one."""
     if credentials is None or not credentials.credentials:
         raise UnauthorizedError("Authentication required")
-    return await get_verifier().verify(credentials.credentials)
+
+    try:
+        verifier = get_verifier()
+    except RuntimeError as exc:
+        # Clerk is not configured, so no token can be verified. That is the
+        # server's fault, not the caller's -- 503 rather than 401, and
+        # certainly rather than the unhandled 500 this used to be. Production
+        # cannot reach here: settings validation refuses to boot without it.
+        raise ServiceUnavailableError("Authentication is not configured on this server") from exc
+
+    return await verifier.verify(credentials.credentials)
 
 
 AuthSubject = Annotated[AuthenticatedSubject, Depends(get_auth_subject)]
