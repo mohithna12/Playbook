@@ -176,7 +176,7 @@ class TestLiveProgress:
 
 class TestFallback:
     async def test_a_job_finishing_without_a_publish_still_ends_the_stream(
-        self, sse_session: AsyncSession
+        self, sse_session: AsyncSession, engine: AsyncEngine
     ) -> None:
         """Covers a publish lost to a Redis restart: the row is the backstop.
 
@@ -194,7 +194,7 @@ class TestFallback:
             await asyncio.sleep(0.3)
             from sqlalchemy.ext.asyncio import async_sessionmaker
 
-            maker = async_sessionmaker(bind=sse_session.get_bind(), expire_on_commit=False)
+            maker = async_sessionmaker(bind=engine, expire_on_commit=False)
             async with maker() as other:
                 await JobRepository(other).finish(job_id, status="PARTIAL")
                 await other.commit()
@@ -249,7 +249,9 @@ class TestScoping:
 
 
 class TestCancellation:
-    async def test_cancelling_publishes_a_terminal_event(self, sse_session: AsyncSession) -> None:
+    async def test_cancelling_publishes_a_terminal_event(
+        self, sse_session: AsyncSession, engine: AsyncEngine
+    ) -> None:
         """A watching client should see the cancellation, not just stop hearing."""
         job_id, user_id = await make_job(sse_session, "cancel_1")
         await JobRepository(sse_session).mark_running(job_id)
@@ -262,7 +264,7 @@ class TestCancellation:
             await asyncio.sleep(0.3)
             from sqlalchemy.ext.asyncio import async_sessionmaker
 
-            maker = async_sessionmaker(bind=sse_session.get_bind(), expire_on_commit=False)
+            maker = async_sessionmaker(bind=engine, expire_on_commit=False)
             async with maker() as other:
                 await JobService(other).cancel(job_id, user_id)
 

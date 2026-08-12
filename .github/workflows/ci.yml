@@ -72,19 +72,14 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --frozen
 
-      - name: Run unit tests with coverage
-        run: |
-          uv run pytest tests/unit/ \
-            --cov=app \
-            --cov-report=xml:coverage.xml \
-            --cov-report=term \
-            -v
-
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage.xml
+      # No coverage gate here. Unit tests are the fast-feedback job; the
+      # threshold is enforced in the integration job, which runs the whole
+      # suite. Gating on unit tests alone measured 70% for code that is
+      # thoroughly tested -- workers, SSE, and repositories are integration-
+      # shaped by nature, and the only way to satisfy that gate would be to
+      # write unit tests that mock away the thing under test.
+      - name: Run unit tests
+        run: uv run pytest tests/unit/ -v
 
   # ===========================================================================
   # Python: Integration Tests (Postgres + Redis via testcontainers)
@@ -107,8 +102,22 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --frozen
 
-      - name: Run integration tests
-        run: uv run pytest tests/integration/ -v
+      # Unit and integration together, because this is where the coverage
+      # threshold is enforced and it has to see the whole picture.
+      - name: Run integration tests with coverage
+        run: |
+          uv run pytest tests/unit/ tests/integration/ \
+            --cov=app \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term \
+            -v
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
+          if-no-files-found: ignore
 
   # ===========================================================================
   # Contract Tests (OpenAPI + Schemathesis)

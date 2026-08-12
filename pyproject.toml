@@ -215,6 +215,10 @@ source = ["app"]
 omit = [
     "app/main.py",
     "app/core/config.py",
+    # Declaration, not logic: ARQ reads these class attributes to build a
+    # worker. Same category as core/config.py above. The code they point at
+    # (run_job, reap) is covered by the integration suite.
+    "app/workers/config.py",
     "*/conftest.py",
 ]
 
