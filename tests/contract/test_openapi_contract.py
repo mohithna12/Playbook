@@ -25,12 +25,13 @@ pytestmark = pytest.mark.contract
 
 SPEC_PATH = Path(__file__).resolve().parent.parent.parent / "openapi" / "spec.json"
 
-# FastAPI emits OpenAPI 3.1; Schemathesis 3.x supports it behind a flag. The
-# alternative -- downgrading the version the app declares -- would make the
-# committed spec lie about itself to satisfy a test dependency.
-schemathesis.experimental.OPEN_API_3_1.enable()
-
+# OpenAPI 3.1 -- which FastAPI emits -- is supported natively as of
+# Schemathesis 4; the 3.x releases needed an experimental opt-in.
 schema = schemathesis.openapi.from_dict(json.loads(SPEC_PATH.read_text()))
+
+# Dispatch in-process against the ASGI app rather than over a socket to a
+# server the suite would have to start and wait for.
+schema.app = contract_app
 
 # /health and /ready are Kubernetes probes, not part of the contract a client
 # codes against, and including them costs more than it proves. /ready reports
@@ -52,5 +53,4 @@ schema = schema.exclude(path_regex=r"^/(health|ready)$")
 )
 def test_api_conforms_to_its_spec(case: schemathesis.Case) -> None:
     """Every generated request gets a response the spec describes."""
-    response = case.call_asgi(app=contract_app)
-    case.validate_response(response)
+    case.call_and_validate()

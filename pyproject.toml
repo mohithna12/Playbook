@@ -5,7 +5,11 @@ description = "ML-backed fantasy football decision copilot"
 requires-python = ">=3.11"
 dependencies = [
     # API
-    "fastapi>=0.115,<1",
+    "fastapi>=0.115",
+    # Direct floor on a transitive dep: fastapi's own range still permits the
+    # vulnerable starlette, and CVE-2026-48818 (SSRF / NTLM credential theft
+    # via UNC paths) is fixed in 1.1.0.
+    "starlette>=1.1.0",
     "uvicorn[standard]>=0.30,<1",
     "pydantic>=2.9,<3",
     "pydantic-settings>=2.5,<3",
@@ -31,7 +35,11 @@ dependencies = [
     "opentelemetry-instrumentation-redis>=0.49b,<1",
     "opentelemetry-instrumentation-httpx>=0.49b,<1",
     "opentelemetry-exporter-otlp-proto-http>=1.28,<2",
-    "prometheus-fastapi-instrumentator>=7,<8",
+    # prometheus-fastapi-instrumentator is deliberately absent. It is not
+    # imported anywhere yet (it is for M17 observability) and its <8 range
+    # caps starlette below 1.0, which pins us to a starlette carrying
+    # CVE-2026-48818. Add it back at M17 at whatever version tracks the
+    # starlette in use then.
     # Logging
     "structlog>=24,<25",
     # AWS
@@ -63,13 +71,13 @@ ml = [
     "pyarrow>=18,<19",
 ]
 dev = [
-    "pytest>=8,<9",
-    "pytest-asyncio>=0.24,<1",
+    "pytest>=9,<10",
+    "pytest-asyncio>=1.0,<2",
     "pytest-cov>=6,<7",
     "pytest-benchmark>=5,<6",
     "hypothesis>=6.115,<7",
     "testcontainers[postgres,redis]>=4,<5",
-    "schemathesis>=3.36,<4",
+    "schemathesis>=4.24.3,<5",
     "ruff>=0.8,<1",
     "mypy>=1.13,<2",
     "import-linter>=2,<3",

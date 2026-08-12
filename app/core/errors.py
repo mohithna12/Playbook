@@ -83,7 +83,7 @@ class AppError(Exception):
 
 
 class ValidationError(AppError):
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    status_code = status.HTTP_422_UNPROCESSABLE_CONTENT
     title = "Validation Error"
     slug = "validation-failed"
 
@@ -217,7 +217,7 @@ def register_error_handlers(app: FastAPI) -> None:
             ProblemDetail(
                 type=f"{ERROR_TYPE_BASE}/validation-failed",
                 title="Validation Error",
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="Request validation failed",
                 instance=request.url.path,
                 trace_id=current_trace_id(),
