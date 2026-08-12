@@ -68,7 +68,9 @@ ml = [
     # no mention of numba.
     "numba>=0.61",
     "optuna>=4,<5",
-    "pyarrow>=18,<19",
+    # >=23.0.1 for CVE-2026-25087 (HIGH); the previous <19 cap sat below the
+    # fix, so the ml image failed its Trivy scan.
+    "pyarrow>=23.0.1",
 ]
 dev = [
     "pytest>=9,<10",
