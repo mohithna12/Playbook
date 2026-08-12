@@ -24,7 +24,7 @@
     "openapi-fetch": "^0.12"
   },
   "devDependencies": {
-    "typescript": "^5.7",
+    "typescript": "^7.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/node": "^22",
