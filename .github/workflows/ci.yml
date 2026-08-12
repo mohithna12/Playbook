@@ -173,32 +173,49 @@ jobs:
     name: Frontend Checks
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # The frontend is scaffolding until M15 -- package.json exists but no
-    # lockfile does, so `npm ci` and setup-node's cache both fail. Runs
-    # automatically once a lockfile is committed.
-    if: hashFiles('frontend/package-lock.json') != ''
     defaults:
       run:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
+      # The frontend is scaffolding until M15: package.json exists, a lockfile
+      # does not, so setup-node's cache lookup and `npm ci` both fail. The
+      # guard is a step rather than a job-level `if` because hashFiles() needs
+      # a checked-out workspace -- at job level it is a workflow validation
+      # error, and the whole file fails to parse.
+      - name: Check for a lockfile
+        id: lockfile
+        working-directory: .
+        run: |
+          if [ -f frontend/package-lock.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No frontend/package-lock.json; skipping frontend checks until the app is built (M15)."
+          fi
+
       - uses: actions/setup-node@v4
+        if: steps.lockfile.outputs.present == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        if: steps.lockfile.outputs.present == 'true'
         run: npm ci
 
       - name: ESLint
+        if: steps.lockfile.outputs.present == 'true'
         run: npm run lint
 
       - name: Prettier check
+        if: steps.lockfile.outputs.present == 'true'
         run: npx prettier --check "src/**/*.{ts,tsx,css}"
 
       - name: TypeScript check
+        if: steps.lockfile.outputs.present == 'true'
         run: npx tsc --noEmit
 
       - name: Run tests
