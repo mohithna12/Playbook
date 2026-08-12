@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
 
-from fastapi import Depends, Request
+from fastapi import Depends, Header, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -118,15 +118,51 @@ ReadRateLimit = Depends(rate_limited(LimitTier.READ))
 WriteRateLimit = Depends(rate_limited(LimitTier.WRITE))
 ExplainRateLimit = Depends(rate_limited(LimitTier.EXPLAIN))
 
+# Long enough for a UUID or a hash, short enough that it cannot be used as a
+# side channel to stash data on the job row.
+IDEMPOTENCY_KEY_MAX_LENGTH = 255
+
+
+async def get_idempotency_key(
+    idempotency_key: Annotated[
+        str | None,
+        Header(
+            alias="Idempotency-Key",
+            max_length=IDEMPOTENCY_KEY_MAX_LENGTH,
+            description=(
+                "Replaying a key within 24h returns the original job instead of "
+                "starting a second one."
+            ),
+        ),
+    ] = None,
+) -> str | None:
+    """The caller's idempotency key, if any (RFC 12.1).
+
+    Optional by design. A client that retries without one gets a second job,
+    which is the correct default for a header it never sent -- guessing a key
+    from the request body would silently collapse two deliberate submissions
+    into one.
+    """
+    if idempotency_key is None:
+        return None
+    stripped = idempotency_key.strip()
+    return stripped or None
+
+
+IdempotencyKey = Annotated[str | None, Depends(get_idempotency_key)]
+
 
 __all__ = [
+    "IDEMPOTENCY_KEY_MAX_LENGTH",
     "AuthSubject",
     "CurrentUser",
     "DbSession",
     "ExplainRateLimit",
+    "IdempotencyKey",
     "ReadRateLimit",
     "WriteRateLimit",
     "get_auth_subject",
     "get_current_user",
+    "get_idempotency_key",
     "rate_limited",
 ]

@@ -105,7 +105,19 @@ def register(kind: JobKind) -> Callable[[Any], Any]:
 
 
 def handler_for(kind: JobKind) -> Any:
-    return _HANDLERS[kind]
+    """The registered handler for ``kind``.
+
+    A clear error rather than a bare KeyError: this fires when a worker image
+    is missing the module that registers the handler, and "KeyError: JobKind.X"
+    on a failed job row is a much longer debugging session than saying so.
+    """
+    try:
+        return _HANDLERS[kind]
+    except KeyError:
+        raise LookupError(
+            f"No handler registered for job kind {kind!r}. "
+            "Is its module imported by app.workers.config?"
+        ) from None
 
 
 async def _heartbeat_loop(job_id: uuid.UUID, sessionmaker: Any) -> None:
