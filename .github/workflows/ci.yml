@@ -195,7 +195,7 @@ jobs:
             echo "::notice::No frontend/package-lock.json; skipping frontend checks until the app is built (M15)."
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.lockfile.outputs.present == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
