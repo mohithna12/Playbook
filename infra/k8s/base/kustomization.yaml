@@ -11,6 +11,8 @@ resources:
   - api/pdb.yaml
   - worker/deployment.yaml
   - sim-worker/deployment.yaml
+  - reaper/deployment.yaml
+  - keda/worker-scaledobject.yaml
   - pgbouncer/deployment.yaml
   - pgbouncer/service.yaml
   - pgbouncer/configmap.yaml

@@ -1,0 +1,71 @@
+# The job reaper.
+#
+# A separate deployment from the worker pool, not a job kind on it. The reaper
+# is what recovers from a wedged or backed-up queue, so it must not be waiting
+# behind that queue to run -- and it must not be scaled to zero by an autoscaler
+# reading a queue depth it is meant to fix.
+#
+# Exactly one replica. Concurrent sweeps are safe (every transition is a
+# guarded UPDATE, so a loser simply sees a row count of zero), but a second
+# replica buys nothing: a sweep is a single indexed query every 30s.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: playbook-reaper
+  labels:
+    app.kubernetes.io/name: reaper
+    app.kubernetes.io/component: worker
+spec:
+  replicas: 1
+  strategy:
+    # Never two reapers mid-rollout, and never a gap either way that matters:
+    # a missed sweep is picked up 30s later.
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: reaper
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: reaper
+        app.kubernetes.io/component: worker
+    spec:
+      serviceAccountName: playbook-app
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: reaper
+          image: playbook-worker:latest
+          command: ["uv", "run", "arq", "app.workers.config.ReaperSettings"]
+          envFrom:
+            - secretRef:
+                name: playbook-secrets
+          env:
+            - name: ENVIRONMENT
+              value: production
+            - name: LOG_LEVEL
+              value: INFO
+          resources:
+            # A cron loop running one indexed query. Sized accordingly.
+            requests:
+              cpu: 25m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

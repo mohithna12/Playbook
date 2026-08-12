@@ -1,0 +1,57 @@
+# Scale the general worker pool on queue depth.
+#
+# CPU is the wrong signal here: these jobs are I/O-bound (Sleeper, Postgres,
+# the LLM API), so a backlog of 40 queued imports shows up as idle pods and an
+# HPA would never react. Queue length is the load.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: playbook-worker
+  labels:
+    app.kubernetes.io/name: worker
+    app.kubernetes.io/component: autoscaling
+spec:
+  scaleTargetRef:
+    name: playbook-worker
+  # Never scale to zero. A cold start pays image pull plus connection setup,
+  # and the reaper's own cadence assumes something is draining the queue.
+  minReplicaCount: 1
+  maxReplicaCount: 8
+  # Longer than the longest job deadline (league.full_import, 180s) so a pod is
+  # never removed out from under work it is still doing.
+  cooldownPeriod: 300
+  pollingInterval: 15
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+          # Import is bursty -- a user connects a league and expects it now.
+          stabilizationWindowSeconds: 0
+        scaleDown:
+          # Shed slowly. Flapping costs more than an idle pod.
+          stabilizationWindowSeconds: 300
+  triggers:
+    - type: redis
+      metadata:
+        addressFromEnv: REDIS_HOST_PORT
+        # ARQ's default queue key. Changing arq's queue_name means changing
+        # this too -- there is no shared constant across the two.
+        listName: arq:queue
+        # 5 pending jobs per replica (RFC 7.2). Above that, add a pod.
+        listLength: "5"
+        databaseIndex: "1" # redis_queue_db
+        enableTLS: "true"
+      authenticationRef:
+        name: playbook-redis-auth
+---
+# Redis needs an auth token; KEDA reads it from the same secret the app uses,
+# so there is one place to rotate it.
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: playbook-redis-auth
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: playbook-secrets
+      key: REDIS_AUTH_TOKEN

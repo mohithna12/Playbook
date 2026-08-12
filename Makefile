@@ -1,4 +1,4 @@
-.PHONY: help install dev lint typecheck imports test test-unit test-integration test-contract test-ml format check migrate migrate-down migrate-new run run-worker run-sim-worker docker-up docker-down openapi frontend-install frontend-dev frontend-build clean
+.PHONY: help install dev lint typecheck imports test test-unit test-integration test-contract test-ml format check migrate migrate-down migrate-new run run-worker run-sim-worker run-reaper docker-up docker-down openapi frontend-install frontend-dev frontend-build clean
 
 PYTHON := uv run
 PYTEST := $(PYTHON) pytest
@@ -81,6 +81,9 @@ run: ## Start the FastAPI development server
 
 run-worker: ## Start the ARQ worker
 	$(PYTHON) arq app.workers.config.WorkerSettings
+
+run-reaper: ## Start the job reaper (reconciles stale jobs)
+	$(PYTHON) arq app.workers.config.ReaperSettings
 
 run-sim-worker: ## Start the simulation worker
 	$(PYTHON) arq app.workers.config.SimWorkerSettings
