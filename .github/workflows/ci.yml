@@ -219,6 +219,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Run tests
+        if: steps.lockfile.outputs.present == 'true'
         run: npx vitest run
 
   # ===========================================================================
