@@ -21,6 +21,7 @@ from app.core.config import get_settings
 from app.core.logging import setup_logging
 from app.domain.jobs import HEARTBEAT_INTERVAL_SECONDS
 from app.workers import echo as _echo  # noqa: F401 - registers the echo handler
+from app.workers import league_import as _league_import  # noqa: F401 - registers the import handler
 from app.workers.base import run_job
 from app.workers.queue import redis_settings
 from app.workers.reaper import reap
