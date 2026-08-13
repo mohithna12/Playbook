@@ -1,0 +1,13 @@
+[
+  {
+    "user_id": "77665544332211009",
+    "display_name": "gridiron_gary",
+    "avatar": "abc123",
+    "metadata": {"team_name": "Kelce's Kitchen"}
+  },
+  {
+    "user_id": "99887766554433221",
+    "display_name": "no_team_name_set",
+    "metadata": {}
+  }
+]

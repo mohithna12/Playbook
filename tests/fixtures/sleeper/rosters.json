@@ -1,0 +1,37 @@
+[
+  {
+    "roster_id": 1,
+    "owner_id": "77665544332211009",
+    "league_id": "1124589302838374400",
+    "players": ["4034", "6794", "5849", "1234"],
+    "starters": ["4034", "6794", null, "5849"],
+    "reserve": ["1234"],
+    "taxi": [],
+    "settings": {
+      "wins": 7,
+      "losses": 3,
+      "ties": 1,
+      "fpts": 1234,
+      "fpts_decimal": 56,
+      "fpts_against": 1100,
+      "fpts_against_decimal": 4,
+      "waiver_position": 3,
+      "waiver_budget": 100,
+      "waiver_budget_used": 35
+    }
+  },
+  {
+    "roster_id": 2,
+    "owner_id": null,
+    "league_id": "1124589302838374400",
+    "players": ["2222", "3333"],
+    "starters": ["2222", "3333"],
+    "settings": {
+      "wins": 0,
+      "losses": 11,
+      "ties": 0,
+      "fpts": 800,
+      "fpts_decimal": 0
+    }
+  }
+]

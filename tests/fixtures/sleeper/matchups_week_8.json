@@ -1,0 +1,26 @@
+[
+  {
+    "roster_id": 1,
+    "matchup_id": 1,
+    "points": 118.94,
+    "custom_points": null,
+    "players": ["4034", "6794", "5849"],
+    "starters": ["4034", "6794", null]
+  },
+  {
+    "roster_id": 2,
+    "matchup_id": 1,
+    "points": 96.5,
+    "custom_points": 100.0,
+    "players": ["2222", "3333"],
+    "starters": ["2222", "3333"]
+  },
+  {
+    "roster_id": 3,
+    "matchup_id": null,
+    "points": 0,
+    "custom_points": null,
+    "players": [],
+    "starters": []
+  }
+]

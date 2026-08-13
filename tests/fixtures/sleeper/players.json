@@ -1,0 +1,37 @@
+{
+  "4034": {
+    "player_id": "4034",
+    "first_name": "Christian",
+    "last_name": "McCaffrey",
+    "full_name": "Christian McCaffrey",
+    "position": "RB",
+    "team": "SF",
+    "status": "Active"
+  },
+  "6794": {
+    "player_id": "6794",
+    "first_name": "Justin",
+    "last_name": "Jefferson",
+    "full_name": "Justin Jefferson",
+    "position": "WR",
+    "team": "MIN",
+    "status": "Active"
+  },
+  "SF": {
+    "player_id": "SF",
+    "first_name": null,
+    "last_name": null,
+    "full_name": null,
+    "position": "DEF",
+    "team": "SF",
+    "status": "Active"
+  },
+  "9999": {
+    "player_id": "9999",
+    "first_name": "Retired",
+    "last_name": "Guy",
+    "position": "TE",
+    "team": null,
+    "status": "Inactive"
+  }
+}

@@ -1,0 +1,36 @@
+[
+  {
+    "transaction_id": "1124589302838374401",
+    "type": "waiver",
+    "status": "complete",
+    "leg": 8,
+    "created": 1793577600000,
+    "roster_ids": [1],
+    "adds": {"7788": "1"},
+    "drops": {"1234": "1"},
+    "settings": {"waiver_bid": 17},
+    "draft_picks": [],
+    "consenter_ids": [1]
+  },
+  {
+    "transaction_id": "1124589302838374402",
+    "type": "trade",
+    "status": "complete",
+    "leg": 8,
+    "created": 1793664000000,
+    "roster_ids": [1, 2],
+    "adds": {"2222": "1", "4034": "2"},
+    "drops": {"2222": "2", "4034": "1"},
+    "settings": null
+  },
+  {
+    "transaction_id": "1124589302838374403",
+    "type": "free_agent",
+    "status": "failed",
+    "leg": 8,
+    "created": null,
+    "roster_ids": [2],
+    "adds": null,
+    "drops": null
+  }
+]
